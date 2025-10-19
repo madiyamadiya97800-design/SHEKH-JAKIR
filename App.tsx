@@ -36,6 +36,7 @@ const App: React.FC = () => {
     [ExteriorPart.WINDOW]: '#ffffff',
     [ExteriorPart.ROOF]: '#6b7280',
     [ExteriorPart.RAILING]: '#4b5563',
+    [ExteriorPart.LEAVES]: '#22c55e',
   });
   const [enabledParts, setEnabledParts] = useState<Record<ExteriorPart, boolean>>({
     [ExteriorPart.WALL]: true, // Not toggleable
@@ -45,6 +46,7 @@ const App: React.FC = () => {
     [ExteriorPart.WINDOW]: true,
     [ExteriorPart.ROOF]: true,
     [ExteriorPart.RAILING]: true,
+    [ExteriorPart.LEAVES]: true,
   });
   const [prompt, setPrompt] = useState<string>('');
   const [theme, setTheme] = useState<Theme>('light');
@@ -142,22 +144,28 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   }, [originalImage, colors, prompt, enabledParts, addLogo, maskData, referenceImage]);
+  
+  const Title: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+      <h2 className="text-xl font-bold mb-4 bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-50 bg-clip-text text-transparent">
+        {children}
+      </h2>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 to-purple-100 dark:from-gray-900 dark:to-indigo-900 text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
       <Header theme={theme} toggleTheme={toggleTheme} />
       <main className="p-4 md:p-8">
         <div className="container mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Controls Panel */}
-          <div className="lg:col-span-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg h-fit">
-            <h2 className="text-xl font-bold mb-4 text-gray-700 dark:text-gray-300">1. Photo Upload Karein</h2>
+          <div className="lg:col-span-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg h-fit border border-gray-200/50 dark:border-gray-700/50">
+            <Title>1. Photo Upload Karein</Title>
             <FileUpload onImageUpload={handleImageUpload} />
 
             <div className="mt-4">
               <button
                 onClick={() => setIsDrawing(true)}
                 disabled={!originalImage}
-                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                   <BrushIcon />
                   Manual Selection (Draw Mask)
@@ -170,7 +178,7 @@ const App: React.FC = () => {
             </div>
 
             <div className="mt-8">
-              <h2 className="text-xl font-bold mb-4 text-gray-700 dark:text-gray-300">2. Rang Chunein</h2>
+              <Title>2. Rang Chunein</Title>
               <div className="space-y-6">
                 <ColorPicker
                   label="Deewar (Wall)"
@@ -242,11 +250,21 @@ const App: React.FC = () => {
                   onToggle={handleTogglePart}
                   toggleable={true}
                 />
+                <ColorPicker
+                  label="Patte (Leaves)"
+                  part={ExteriorPart.LEAVES}
+                  color={colors[ExteriorPart.LEAVES]}
+                  onColorChange={handleColorChange}
+                  onPaletteOpen={() => setPaletteOpenFor(ExteriorPart.LEAVES)}
+                  isEnabled={enabledParts[ExteriorPart.LEAVES]}
+                  onToggle={handleTogglePart}
+                  toggleable={true}
+                />
               </div>
             </div>
 
-            <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h2 className="text-xl font-bold mb-2 text-gray-700 dark:text-gray-300">Style Reference (Optional)</h2>
+            <div className="mt-8 border-t border-gray-200 dark:border-gray-700/50 pt-6">
+                <Title>Style Reference (Optional)</Title>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                     Doosre ghar ki photo upload karke style copy karein.
                 </p>
@@ -259,9 +277,9 @@ const App: React.FC = () => {
             </div>
             
             <div className="mt-8">
-              <h2 className="text-xl font-bold mb-2 text-gray-700 dark:text-gray-300">Extra Jankari (Optional)</h2>
+              <Title>Extra Jankari (Optional)</Title>
               <textarea
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-700/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                 rows={3}
                 placeholder="Jaise: 'Deewar par texture add karein' ya 'Darwaze ko glossy finish dein'."
                 value={prompt}
@@ -270,16 +288,16 @@ const App: React.FC = () => {
             </div>
 
             <div className="mt-8">
-              <h2 className="text-xl font-bold mb-4 text-gray-700 dark:text-gray-300">3. Image Banayein</h2>
-               <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg mb-4">
+              <Title>3. Image Banayein</Title>
+               <div className="flex items-center justify-between bg-white/50 dark:bg-gray-700/50 p-3 rounded-lg mb-4">
                     <label htmlFor="add-logo-toggle" className="text-gray-600 dark:text-gray-300 font-medium">
                         JAKIR Logo Jodein
                     </label>
                     <button
                         type="button"
                         className={`${
-                            addLogo ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
-                        } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800`}
+                            addLogo ? 'bg-gradient-to-r from-teal-400 to-cyan-500' : 'bg-gray-200 dark:bg-gray-600'
+                        } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 dark:focus:ring-offset-gray-800`}
                         role="switch"
                         aria-checked={addLogo}
                         onClick={() => setAddLogo(!addLogo)}
@@ -299,7 +317,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Image Display */}
-          <div className="lg:col-span-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="lg:col-span-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center min-h-[60vh] border border-gray-200/50 dark:border-gray-700/50">
             {isLoading && <Spinner />}
             {!isLoading && !originalImage && (
               <div className="text-center text-gray-500 dark:text-gray-400">

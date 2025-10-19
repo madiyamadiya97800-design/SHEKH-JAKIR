@@ -17,8 +17,8 @@ const ToggleSwitch: React.FC<{ enabled: boolean; onChange: (enabled: boolean) =>
         <button
             type="button"
             className={`${
-                enabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
-            } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800`}
+                enabled ? 'bg-gradient-to-r from-teal-400 to-cyan-500' : 'bg-gray-200 dark:bg-gray-600'
+            } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 dark:focus:ring-offset-gray-800`}
             role="switch"
             aria-checked={enabled}
             onClick={() => onChange(!enabled)}

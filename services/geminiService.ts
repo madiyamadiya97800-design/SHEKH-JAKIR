@@ -10,6 +10,7 @@ const partToHumanReadable: Record<ExteriorPart, string> = {
   [ExteriorPart.WINDOW]: 'All window frames',
   [ExteriorPart.ROOF]: 'The entire roof surface',
   [ExteriorPart.RAILING]: 'All railings (e.g., on balconies, stairs, porches)',
+  [ExteriorPart.LEAVES]: 'All leaves on trees, bushes, and plants',
 };
 
 const partToIgnorePhrase: Record<string, string> = {
@@ -19,6 +20,7 @@ const partToIgnorePhrase: Record<string, string> = {
   [ExteriorPart.RAILING]: 'the railings',
   [ExteriorPart.FEATURE_WALL_1]: 'any feature or accent walls',
   [ExteriorPart.FEATURE_WALL_2]: 'any feature or accent walls',
+  [ExteriorPart.LEAVES]: 'the leaves on trees and plants',
 };
 
 
@@ -68,7 +70,7 @@ export const applyColorsToHouse = async (
         CRITICAL INSTRUCTIONS:
         - Apply the new colors with absolute photorealism. The final image must look like a real photograph.
         - Preserve all original surface textures, lighting, shadows, and reflections.
-        - ONLY color the areas defined in the mask. Do NOT change any other part of the image (e.g., sky, trees, cars, landscaping, neighboring houses).
+        - ONLY color the areas defined in the mask. Do NOT change any other part of the image (e.g., sky, trees, cars, landscaping, neighboring houses) unless that part is specifically defined in the mask (e.g. 'Leaves').
         - If an area is not colored in the mask, it must remain untouched from the original photo.
       `;
 
@@ -102,7 +104,7 @@ export const applyColorsToHouse = async (
         CRITICAL INSTRUCTIONS:
         - Apply the style of the 'reference image' to the 'original image' with absolute photorealism. The final result must look like a real photograph.
         - Do NOT change the architectural structure of the house in the 'original image'. Only modify its surfaces (walls, roof, doors, etc.).
-        - Preserve the original background, landscaping, sky, and any surrounding objects (like cars, plants) from the 'original image'. ONLY edit the house itself.
+        - Preserve the original background, landscaping, sky, and any surrounding objects (like cars, plants) from the 'original image', unless a specific instruction to change them (like for 'Leaves') is given.
         - If specific color requests are provided below, try to incorporate them into the style of the reference image. The reference style is the priority, but these colors should be used if they fit the aesthetic.
         ${colorInstructions}
       `;
@@ -144,8 +146,8 @@ export const applyColorsToHouse = async (
     prompt = `
       You are an expert photo editor specializing in architectural visualization.
       Edit the following image of a house exterior with photorealistic quality.
-      DO NOT change the structure of the house, the background, landscaping, sky, or any surrounding objects like cars, plants, or pathways.
-      Only change the colors of the specified parts of the building itself.
+      DO NOT change the structure of the house, the sky, or any surrounding objects like cars or pathways.
+      Only change the colors of the specified parts of the building and its immediate surroundings (like leaves, if specified).
       Apply the following colors precisely and realistically to the specified parts:
       ${colorInstructions}
       ${ignoreInstructions}

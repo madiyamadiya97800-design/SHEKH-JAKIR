@@ -6,6 +6,7 @@ export enum ExteriorPart {
     RAILING = 'railing',
     FEATURE_WALL_1 = 'feature_wall_1',
     FEATURE_WALL_2 = 'feature_wall_2',
+    LEAVES = 'leaves',
 }
 
 export type ColorSelection = {

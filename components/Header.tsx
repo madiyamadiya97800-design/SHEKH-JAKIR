@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ theme, toggleTheme }) => {
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-md dark:border-b dark:border-gray-700 transition-colors duration-300">
+    <header className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-md shadow-md dark:border-b dark:border-gray-700/50 transition-colors duration-300 sticky top-0 z-20">
       <div className="container mx-auto px-4 py-4 md:px-8 flex items-center justify-between">
         <div className="flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600 dark:text-blue-500 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, toggleTheme }) => {
         </div>
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
+          className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
           aria-label="Toggle theme"
         >
           {theme === 'light' ? (

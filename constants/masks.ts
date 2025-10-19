@@ -8,4 +8,5 @@ export const MASK_COLORS: Record<ExteriorPart, { name: string, color: string }> 
     [ExteriorPart.WINDOW]: { name: 'Khidki (Window)', color: '#ff00ff' }, // magenta
     [ExteriorPart.ROOF]: { name: 'Chhat (Roof)', color: '#00ffff' }, // cyan
     [ExteriorPart.RAILING]: { name: 'Railing', color: '#ffa500' }, // orange
+    [ExteriorPart.LEAVES]: { name: 'Patte (Leaves)', color: '#ffc0cb' }, // pink
 };

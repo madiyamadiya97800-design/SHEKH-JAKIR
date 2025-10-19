@@ -9,11 +9,22 @@ import { DownloadButton } from './components/DownloadButton';
 import { ExteriorPart, ColorSelection } from './types';
 import { applyColorsToHouse } from './services/geminiService';
 import { ColorPaletteModal } from './components/ColorPaletteModal';
+import { DrawingModal } from './components/DrawingModal';
+import { ReferenceUpload } from './components/ReferenceUpload';
 
 type Theme = 'light' | 'dark';
 
+const BrushIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+        <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
+    </svg>
+);
+
+
 const App: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<{ file: File; base64: string } | null>(null);
+  const [referenceImage, setReferenceImage] = useState<{ file: File; base64: string } | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +50,8 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>('light');
   const [paletteOpenFor, setPaletteOpenFor] = useState<ExteriorPart | null>(null);
   const [addLogo, setAddLogo] = useState<boolean>(true);
+  const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [maskData, setMaskData] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -62,7 +75,17 @@ const App: React.FC = () => {
   const handleImageUpload = (file: File, base64: string) => {
     setOriginalImage({ file, base64 });
     setGeneratedImage(null);
+    setReferenceImage(null);
+    setMaskData(null);
     setError(null);
+  };
+
+  const handleReferenceImageUpload = (file: File, base64: string) => {
+    setReferenceImage({ file, base64 });
+  };
+
+  const handleRemoveReferenceImage = () => {
+    setReferenceImage(null);
   };
 
   const handleColorChange = (part: ExteriorPart, color: string) => {
@@ -98,7 +121,15 @@ const App: React.FC = () => {
         }
       });
       
-      const result = await applyColorsToHouse(originalImage.base64, originalImage.file.type, activeColors, prompt, addLogo);
+      const result = await applyColorsToHouse(
+          originalImage.base64, 
+          originalImage.file.type, 
+          activeColors, 
+          prompt, 
+          addLogo, 
+          maskData,
+          referenceImage ? { base64: referenceImage.base64, mimeType: referenceImage.file.type } : null
+      );
       if (result) {
         setGeneratedImage(`data:image/png;base64,${result}`);
       } else {
@@ -110,7 +141,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [originalImage, colors, prompt, enabledParts, addLogo]);
+  }, [originalImage, colors, prompt, enabledParts, addLogo, maskData, referenceImage]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
@@ -121,6 +152,22 @@ const App: React.FC = () => {
           <div className="lg:col-span-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg h-fit">
             <h2 className="text-xl font-bold mb-4 text-gray-700 dark:text-gray-300">1. Photo Upload Karein</h2>
             <FileUpload onImageUpload={handleImageUpload} />
+
+            <div className="mt-4">
+              <button
+                onClick={() => setIsDrawing(true)}
+                disabled={!originalImage}
+                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                  <BrushIcon />
+                  Manual Selection (Draw Mask)
+              </button>
+              {maskData && (
+                  <div className="mt-2 text-center text-sm text-green-600 dark:text-green-400">
+                      <p>Manual mask applied. <button onClick={() => setMaskData(null)} className="underline font-semibold">Clear</button></p>
+                  </div>
+              )}
+            </div>
 
             <div className="mt-8">
               <h2 className="text-xl font-bold mb-4 text-gray-700 dark:text-gray-300">2. Rang Chunein</h2>
@@ -197,6 +244,19 @@ const App: React.FC = () => {
                 />
               </div>
             </div>
+
+            <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h2 className="text-xl font-bold mb-2 text-gray-700 dark:text-gray-300">Style Reference (Optional)</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Doosre ghar ki photo upload karke style copy karein.
+                </p>
+                <ReferenceUpload
+                    referenceImage={referenceImage}
+                    onImageUpload={handleReferenceImageUpload}
+                    onImageRemove={handleRemoveReferenceImage}
+                    disabled={!originalImage}
+                />
+            </div>
             
             <div className="mt-8">
               <h2 className="text-xl font-bold mb-2 text-gray-700 dark:text-gray-300">Extra Jankari (Optional)</h2>
@@ -213,7 +273,7 @@ const App: React.FC = () => {
               <h2 className="text-xl font-bold mb-4 text-gray-700 dark:text-gray-300">3. Image Banayein</h2>
                <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg mb-4">
                     <label htmlFor="add-logo-toggle" className="text-gray-600 dark:text-gray-300 font-medium">
-                        S/J Icon Jodein
+                        JAKIR Logo Jodein
                     </label>
                     <button
                         type="button"
@@ -270,6 +330,18 @@ const App: React.FC = () => {
         onClose={() => setPaletteOpenFor(null)}
         onSelectColor={handlePaletteSelect}
       />
+      {originalImage && (
+        <DrawingModal 
+          isOpen={isDrawing}
+          onClose={() => setIsDrawing(false)}
+          onSave={(data) => {
+              setMaskData(data);
+              setIsDrawing(false);
+          }}
+          originalImage={originalImage.base64}
+          originalMimeType={originalImage.file.type}
+        />
+      )}
     </div>
   );
 };

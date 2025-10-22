@@ -5,7 +5,7 @@ import { MASK_COLORS } from '../constants/masks';
 interface DrawingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (maskBase64: string) => void;
+  onSave: (maskBase64: string, partsInMask: ExteriorPart[]) => void;
   originalImage: string | null;
   originalMimeType: string | null;
 }
@@ -159,9 +159,34 @@ export const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onS
   const handleSave = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    const presentMaskColors = new Set<string>();
+
+    for (let i = 0; i < data.length; i += 4) {
+      // Check if pixel is not transparent (alpha > 0)
+      if (data[i + 3] > 0) {
+        const r = data[i].toString(16).padStart(2, '0');
+        const g = data[i + 1].toString(16).padStart(2, '0');
+        const b = data[i + 2].toString(16).padStart(2, '0');
+        presentMaskColors.add(`#${r}${g}${b}`);
+      }
+    }
+
+    const partsInMask: ExteriorPart[] = [];
+    (Object.keys(MASK_COLORS) as ExteriorPart[]).forEach(part => {
+      if (presentMaskColors.has(MASK_COLORS[part].color.toLowerCase())) {
+        partsInMask.push(part);
+      }
+    });
+
     const dataUrl = canvas.toDataURL('image/png');
     const base64 = dataUrl.split(',')[1];
-    onSave(base64);
+    onSave(base64, partsInMask);
   };
 
   const handleClear = () => {

@@ -38,8 +38,8 @@ const App: React.FC = () => {
     [ExteriorPart.RAILING]: '#4b5563',
     [ExteriorPart.LEAVES]: '#22c55e',
   });
-  const [enabledParts, setEnabledParts] = useState<Record<ExteriorPart, boolean>>({
-    [ExteriorPart.WALL]: true, // Not toggleable
+  const defaultEnabledParts = {
+    [ExteriorPart.WALL]: true,
     [ExteriorPart.FEATURE_WALL_1]: true,
     [ExteriorPart.FEATURE_WALL_2]: true,
     [ExteriorPart.DOOR]: true,
@@ -47,7 +47,8 @@ const App: React.FC = () => {
     [ExteriorPart.ROOF]: true,
     [ExteriorPart.RAILING]: true,
     [ExteriorPart.LEAVES]: true,
-  });
+  };
+  const [enabledParts, setEnabledParts] = useState<Record<ExteriorPart, boolean>>(defaultEnabledParts);
   const [prompt, setPrompt] = useState<string>('');
   const [theme, setTheme] = useState<Theme>('light');
   const [paletteOpenFor, setPaletteOpenFor] = useState<ExteriorPart | null>(null);
@@ -103,6 +104,11 @@ const App: React.FC = () => {
       handleColorChange(paletteOpenFor, color);
     }
     setPaletteOpenFor(null);
+  };
+
+  const handleClearMask = () => {
+    setMaskData(null);
+    setEnabledParts(defaultEnabledParts);
   };
 
   const handleGenerate = useCallback(async () => {
@@ -172,7 +178,7 @@ const App: React.FC = () => {
               </button>
               {maskData && (
                   <div className="mt-2 text-center text-sm text-green-600 dark:text-green-400">
-                      <p>Manual mask applied. <button onClick={() => setMaskData(null)} className="underline font-semibold">Clear</button></p>
+                      <p>Manual mask applied. <button onClick={handleClearMask} className="underline font-semibold">Clear</button></p>
                   </div>
               )}
             </div>
@@ -186,9 +192,9 @@ const App: React.FC = () => {
                   color={colors[ExteriorPart.WALL]}
                   onColorChange={handleColorChange}
                   onPaletteOpen={() => setPaletteOpenFor(ExteriorPart.WALL)}
-                  isEnabled={true}
-                  onToggle={() => {}}
-                  toggleable={false}
+                  isEnabled={enabledParts[ExteriorPart.WALL]}
+                  onToggle={handleTogglePart}
+                  toggleable={true}
                 />
                  <ColorPicker
                   label="Feature Wall 1"
@@ -352,9 +358,14 @@ const App: React.FC = () => {
         <DrawingModal 
           isOpen={isDrawing}
           onClose={() => setIsDrawing(false)}
-          onSave={(data) => {
+          onSave={(data, partsInMask) => {
               setMaskData(data);
               setIsDrawing(false);
+              const allParts = Object.values(ExteriorPart);
+              const newEnabledState = Object.fromEntries(
+                  allParts.map(part => [part, partsInMask.includes(part)])
+              ) as Record<ExteriorPart, boolean>;
+              setEnabledParts(newEnabledState);
           }}
           originalImage={originalImage.base64}
           originalMimeType={originalImage.file.type}
